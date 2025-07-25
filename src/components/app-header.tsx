@@ -5,16 +5,13 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
 import { AppLogo } from "./app-logo";
 import { AppSidebar } from "./app-sidebar";
-import { Button, buttonVariants } from "./ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { appConfig, baseUrl } from "@/config/app";
+import { buttonVariants } from "./ui/button";
+import { appConfig } from "@/config/app";
 import GitHub from "./icons/github";
 
 export function AppHeader() {
