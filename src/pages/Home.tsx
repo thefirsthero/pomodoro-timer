@@ -6,16 +6,18 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export default function Sample() {
+export default function Home() {
   return (
     <>
       <PageHeader>
-        <PageHeaderHeading>Sample Page</PageHeaderHeading>
+        <PageHeaderHeading>Home</PageHeaderHeading>
       </PageHeader>
       <Card>
         <CardHeader>
-          <CardTitle>Card Title</CardTitle>
-          <CardDescription>Card description.</CardDescription>
+          <CardTitle>React Shadcn Starter</CardTitle>
+          <CardDescription>
+            React + Vite + TypeScript template for building apps with shadcn/ui.
+          </CardDescription>
         </CardHeader>
       </Card>
     </>

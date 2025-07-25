@@ -11,10 +11,10 @@ type AppConfigType = {
 };
 
 export const appConfig: AppConfigType = {
-  name: import.meta.env.VITE_APP_NAME ?? "Sample App",
+  name: import.meta.env.VITE_APP_NAME ?? "Work Focus",
   github: {
-    title: "React Shadcn Starter",
-    url: "https://github.com/thefirsthero/react-shadcn-starter",
+    title: "Work Focus",
+    url: "https://github.com/thefirsthero/work-timer",
   },
   author: {
     name: "thefirsthero",
