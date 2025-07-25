@@ -25,17 +25,18 @@ export default function TimerButton() {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  //   useEffect(() => {
-  //     const newCurrentTime = parseInt(currentTime) - 1;
-  //     async function setTimeAndWait() {
-  //       setCurrentTime(newCurrentTime.toString());
+  useEffect(() => {
+    const newCurrentTime = parseInt(currentTime) - 1;
 
-  //       await delay(10000);
-  //     }
-  //     return () => {
-  //       setTimeAndWait();
-  //     };
-  //   }, [currentTime]);
+    async function setTimeAndWait() {
+      setCurrentTime(newCurrentTime.toString());
+      await delay(10000);
+    }
+
+    return () => {
+      setTimeAndWait();
+    };
+  }, [currentTime]);
 
   return (
     <>
