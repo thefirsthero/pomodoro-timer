@@ -26,11 +26,12 @@ export default function TimerButton() {
   }
 
   useEffect(() => {
+    console.log("current time", currentTime);
     const newCurrentTime = parseInt(currentTime) - 1;
 
     async function setTimeAndWait() {
+      await delay(1000);
       setCurrentTime(newCurrentTime.toString());
-      await delay(10000);
     }
 
     return () => {
