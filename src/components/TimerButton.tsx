@@ -3,8 +3,8 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 
 export default function TimerButton() {
-  const [currentTime, setCurrentTime] = useState("");
   const [startTime, setStartTime] = useState("");
+  const [currentTime, setCurrentTime] = useState<number | null>(null);
   const [error, setError] = useState("");
 
   function handleInput(sTime: string) {
@@ -18,25 +18,29 @@ export default function TimerButton() {
   }
 
   function startTimer() {
-    setCurrentTime(startTime);
-  }
-
-  function delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    if (startTime !== "") {
+      setCurrentTime(parseInt(startTime));
+    }
   }
 
   useEffect(() => {
-    console.log("current time", currentTime);
-    const newCurrentTime = parseInt(currentTime) - 1;
+    if (currentTime === null || currentTime <= 0) return;
 
-    async function setTimeAndWait() {
-      await delay(1000);
-      setCurrentTime(newCurrentTime.toString());
-    }
+    const intervalId = setInterval(() => {
+      setCurrentTime((prevTime) => {
+        if (prevTime !== null) {
+          if (prevTime <= 1) {
+            clearInterval(intervalId);
+            return 0;
+          } else {
+            return prevTime - 1;
+          }
+        }
+        return prevTime;
+      });
+    }, 1000);
 
-    return () => {
-      setTimeAndWait();
-    };
+    return () => clearInterval(intervalId);
   }, [currentTime]);
 
   return (
@@ -50,7 +54,7 @@ export default function TimerButton() {
       ></Input>
       {error && <div className="text-red-600">{error}</div>}
       <div className="grid gap-2 justify-center">
-        <p>{currentTime === "" ? 0 : parseInt(currentTime)}</p>
+        <p>{currentTime !== null ? currentTime : 0}</p>
         <Button className="rounded-4xl" onClick={startTimer}>
           Start Timer
         </Button>
