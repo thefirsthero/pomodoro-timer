@@ -7,31 +7,35 @@ export default function TimerButton() {
   const [startTime, setStartTime] = useState("");
   const [error, setError] = useState("");
 
-  function startTimer() {
-    if (true) {
-      const iCurrentTime = parseInt(currentTime);
-      if (iCurrentTime > 0) {
-        const newTime = iCurrentTime - 1;
-        setCurrentTime(newTime.toString());
-      }
-    }
-  }
-
-  // useEffect(() = {
-  //     startCountdown();
-
-  // }, [time])
-
   function handleInput(sTime: string) {
     const digitOrEmptyRegex: RegExp = /^\d*$/;
     if (!digitOrEmptyRegex.test(sTime)) {
-      console.log(sTime);
       setError("Please enter a valid number");
     } else {
       setStartTime(sTime);
       setError("");
     }
   }
+
+  function startTimer() {
+    setCurrentTime(startTime);
+  }
+
+  function delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  //   useEffect(() => {
+  //     const newCurrentTime = parseInt(currentTime) - 1;
+  //     async function setTimeAndWait() {
+  //       setCurrentTime(newCurrentTime.toString());
+
+  //       await delay(10000);
+  //     }
+  //     return () => {
+  //       setTimeAndWait();
+  //     };
+  //   }, [currentTime]);
 
   return (
     <>
@@ -44,7 +48,7 @@ export default function TimerButton() {
       ></Input>
       {error && <div className="text-red-600">{error}</div>}
       <div className="grid gap-2 justify-center">
-        <p>{currentTime}</p>
+        <p>{currentTime === "" ? 0 : parseInt(currentTime)}</p>
         <Button className="rounded-4xl" onClick={startTimer}>
           Start Timer
         </Button>
