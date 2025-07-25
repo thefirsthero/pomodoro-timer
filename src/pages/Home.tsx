@@ -14,10 +14,8 @@ export default function Home() {
       </PageHeader>
       <Card>
         <CardHeader>
-          <CardTitle>React Shadcn Starter</CardTitle>
-          <CardDescription>
-            React + Vite + TypeScript template for building apps with shadcn/ui.
-          </CardDescription>
+          <CardTitle>Focus Timer</CardTitle>
+          <CardDescription>Implementation will go in here.</CardDescription>
         </CardHeader>
       </Card>
     </>
