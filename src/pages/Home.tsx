@@ -1,6 +1,8 @@
 import { PageHeader, PageHeaderHeading } from "@/components/page-header";
+import TimerButton from "../components/TimerButton.tsx";
 import {
   Card,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -17,6 +19,9 @@ export default function Home() {
           <CardTitle>Focus Timer</CardTitle>
           <CardDescription>Implementation will go in here.</CardDescription>
         </CardHeader>
+        <CardContent>
+          <TimerButton></TimerButton>
+        </CardContent>
       </Card>
     </>
   );
