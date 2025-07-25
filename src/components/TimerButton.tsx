@@ -38,7 +38,7 @@ export default function TimerButton() {
       <label>Timer Length:</label>
       <Input
         className="mb-4"
-        // type="Number"
+        placeholder="Time in seconds"
         value={startTime}
         onChange={(e) => handleInput(e.target.value)}
       ></Input>
