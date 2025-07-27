@@ -298,7 +298,7 @@ export default function PomodoroTimer() {
   const Icon = currentConfig.icon;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted p-4">
+    <div className="min-h-screen bg-background p-4">
       <div className="max-w-2xl mx-auto space-y-8">
         {/* Header */}
         <div className="text-center space-y-2">
@@ -504,7 +504,7 @@ export default function PomodoroTimer() {
             </div>
             <div className="w-full bg-muted rounded-full h-3">
               <div
-                className={`h-3 rounded-full transition-all duration-1000 ease-linear ${currentConfig.bgColor}`}
+                className={`h-3 rounded-full bg-primary transition-all duration-1000 ease-linear`}
                 style={{ width: `${progress}%` }}
               />
             </div>

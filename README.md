@@ -1,4 +1,4 @@
-# Work Focus
+# Pomodoro Timer
 
 React + Vite + TypeScript app for timing focus time for wor sessions.
 

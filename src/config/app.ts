@@ -11,9 +11,9 @@ type AppConfigType = {
 };
 
 export const appConfig: AppConfigType = {
-  name: import.meta.env.VITE_APP_NAME ?? "Work Focus",
+  name: import.meta.env.VITE_APP_NAME ?? "Pomodoro Timer",
   github: {
-    title: "Work Focus",
+    title: "Pomodoro Timer",
     url: "https://github.com/thefirsthero/work-timer",
   },
   author: {
