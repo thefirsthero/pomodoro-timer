@@ -523,6 +523,13 @@ export default function PomodoroTimer() {
   const currentConfig = modeConfig[mode];
   const Icon = currentConfig.icon;
 
+  // Map background color classes to RGB values
+  const bgColorMap: Record<string, string> = {
+    "bg-red-500": "rgb(239, 68, 68)",
+    "bg-green-500": "rgb(34, 197, 94)",
+    "bg-blue-500": "rgb(59, 130, 246)",
+  };
+
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-2xl mx-auto space-y-8">
@@ -677,7 +684,7 @@ export default function PomodoroTimer() {
                   </span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <Volume size={16} className="text-muted-foreground" />
+                  <Volume size={16} className={currentConfig.color} />
                   <input
                     type="range"
                     min="0"
@@ -686,10 +693,14 @@ export default function PomodoroTimer() {
                     onChange={(e) => setAmbientVolume(parseInt(e.target.value))}
                     className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
                     style={{
-                      background: `linear-gradient(to right, rgb(59 130 246) 0%, rgb(59 130 246) ${ambientVolume}%, rgb(156 163 175) ${ambientVolume}%, rgb(156 163 175) 100%)`,
+                      background: `linear-gradient(to right, ${
+                        bgColorMap[currentConfig.bgColor]
+                      } 0%, ${
+                        bgColorMap[currentConfig.bgColor]
+                      } ${ambientVolume}%, rgb(156 163 175) ${ambientVolume}%, rgb(156 163 175) 100%)`,
                     }}
                   />
-                  <Volume2 size={16} className="text-muted-foreground" />
+                  <Volume2 size={16} className={currentConfig.color} />
                 </div>
               </div>
             )}
