@@ -501,6 +501,7 @@ export default function PomodoroTimer() {
       borderColor: "border-red-500",
       icon: Target,
       description: "Time to focus and get work done!",
+      thumbColor: "#ef4444", // red-500
     },
     shortBreak: {
       label: "Short Break",
@@ -509,6 +510,7 @@ export default function PomodoroTimer() {
       borderColor: "border-green-500",
       icon: Coffee,
       description: "Take a short break and recharge",
+      thumbColor: "#22c55e", // green-500
     },
     longBreak: {
       label: "Long Break",
@@ -517,6 +519,7 @@ export default function PomodoroTimer() {
       borderColor: "border-blue-500",
       icon: Coffee,
       description: "Time for a longer break!",
+      thumbColor: "#3b82f6", // blue-500
     },
   };
 
@@ -530,8 +533,40 @@ export default function PomodoroTimer() {
     "bg-blue-500": "rgb(59, 130, 246)",
   };
 
+  const sliderStyles = {
+    background: `linear-gradient(to right, ${
+      bgColorMap[currentConfig.bgColor]
+    } 0%, ${
+      bgColorMap[currentConfig.bgColor]
+    } ${ambientVolume}%, rgb(156 163 175) ${ambientVolume}%, rgb(156 163 175) 100%)`,
+  };
+
+  const sliderThumbStyle = `
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      height: 20px;
+      width: 20px;
+      border-radius: 50%;
+      background: ${currentConfig.thumbColor};
+      cursor: pointer;
+      border: 2px solid white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    input[type="range"]::-moz-range-thumb {
+      height: 20px;
+      width: 20px;
+      border-radius: 50%;
+      background: ${currentConfig.thumbColor};
+      cursor: pointer;
+      border: 2px solid white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+  `;
+
   return (
     <div className="min-h-screen bg-background p-4">
+      <style dangerouslySetInnerHTML={{ __html: sliderThumbStyle }} />
       <div className="max-w-2xl mx-auto space-y-8">
         {/* Header */}
         <div className="text-center space-y-2">
@@ -692,13 +727,7 @@ export default function PomodoroTimer() {
                     value={ambientVolume}
                     onChange={(e) => setAmbientVolume(parseInt(e.target.value))}
                     className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-                    style={{
-                      background: `linear-gradient(to right, ${
-                        bgColorMap[currentConfig.bgColor]
-                      } 0%, ${
-                        bgColorMap[currentConfig.bgColor]
-                      } ${ambientVolume}%, rgb(156 163 175) ${ambientVolume}%, rgb(156 163 175) 100%)`,
-                    }}
+                    style={sliderStyles}
                   />
                   <Volume2 size={16} className={currentConfig.color} />
                 </div>
