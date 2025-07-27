@@ -1,5 +1,5 @@
 import { PageHeader, PageHeaderHeading } from "@/components/page-header";
-import TimerButton from "../components/TimerButton.tsx";
+import TimerButton from "../components/PomodoroTimer.tsx";
 
 export default function Home() {
   return (
