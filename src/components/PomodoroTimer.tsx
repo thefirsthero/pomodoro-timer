@@ -504,7 +504,7 @@ export default function PomodoroTimer() {
             </div>
             <div className="w-full bg-muted rounded-full h-3">
               <div
-                className={`h-3 rounded-full bg-primary transition-all duration-1000 ease-linear`}
+                className={`h-3 rounded-full transition-all duration-1000 ease-linear ${currentConfig.bgColor}`}
                 style={{ width: `${progress}%` }}
               />
             </div>
