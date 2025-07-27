@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import {
   Play,
   Pause,
@@ -7,6 +7,12 @@ import {
   VolumeX,
   Coffee,
   Target,
+  CloudRain,
+  Leaf,
+  Flame,
+  Waves,
+  Wind,
+  Volume,
 } from "lucide-react";
 
 // Add type augmentation for window.webkitAudioContext
@@ -15,6 +21,35 @@ declare global {
     webkitAudioContext?: typeof AudioContext;
   }
 }
+
+// Ambient sound configurations
+const AMBIENT_SOUNDS = {
+  rain: {
+    name: "Rain",
+    icon: CloudRain,
+    color: "text-blue-400",
+  },
+  forest: {
+    name: "Forest",
+    icon: Leaf,
+    color: "text-green-400",
+  },
+  fire: {
+    name: "Fireplace",
+    icon: Flame,
+    color: "text-orange-400",
+  },
+  ocean: {
+    name: "Ocean",
+    icon: Waves,
+    color: "text-cyan-400",
+  },
+  wind: {
+    name: "Wind",
+    icon: Wind,
+    color: "text-gray-400",
+  },
+};
 
 export default function PomodoroTimer() {
   // Timer states
@@ -27,13 +62,20 @@ export default function PomodoroTimer() {
   const [isRunning, setIsRunning] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [backgroundSoundEnabled, setBackgroundSoundEnabled] = useState(false);
+  const [selectedAmbientSound, setSelectedAmbientSound] =
+    useState<keyof typeof AMBIENT_SOUNDS>("rain");
+  const [ambientVolume, setAmbientVolume] = useState(50);
   const [completedPomodoros, setCompletedPomodoros] = useState(0);
   const [currentCycle, setCurrentCycle] = useState(1);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const backgroundNoiseRef = useRef<{
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const ambientSoundRef = useRef<{
     source: AudioBufferSourceNode;
     gainNode: GainNode;
+    filterNode?: BiquadFilterNode;
+    lfoGainNode?: GainNode;
+    lfoSource?: OscillatorNode;
   } | null>(null);
 
   // Get current mode duration
@@ -48,12 +90,80 @@ export default function PomodoroTimer() {
     }
   };
 
-  // Background sound management
-  useEffect(() => {
-    const audioContext = new (window.AudioContext ||
-      window.webkitAudioContext)();
+  // Initialize audio context
+  const getAudioContext = () => {
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext ||
+        window.webkitAudioContext)();
+    }
+    return audioContextRef.current;
+  };
 
-    const createBackgroundNoise = () => {
+  // Completion sound
+  const playCompletionSound = useCallback(() => {
+    try {
+      const audioContext = getAudioContext();
+
+      if (audioContext.state === "suspended") {
+        audioContext.resume();
+      }
+
+      // Create a pleasant chime sound
+      const oscillator1 = audioContext.createOscillator();
+      const oscillator2 = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator1.type = "sine";
+      oscillator1.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+      oscillator1.frequency.setValueAtTime(
+        659.25,
+        audioContext.currentTime + 0.1,
+      ); // E5
+      oscillator1.frequency.setValueAtTime(
+        783.99,
+        audioContext.currentTime + 0.2,
+      ); // G5
+
+      oscillator2.type = "sine";
+      oscillator2.frequency.setValueAtTime(261.63, audioContext.currentTime); // C4
+      oscillator2.frequency.setValueAtTime(
+        329.63,
+        audioContext.currentTime + 0.1,
+      ); // E4
+      oscillator2.frequency.setValueAtTime(
+        392.0,
+        audioContext.currentTime + 0.2,
+      ); // G4
+
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.01,
+        audioContext.currentTime + 0.8,
+      );
+
+      oscillator1.connect(gainNode);
+      oscillator2.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator1.start();
+      oscillator2.start();
+      oscillator1.stop(audioContext.currentTime + 0.8);
+      oscillator2.stop(audioContext.currentTime + 0.8);
+    } catch (error) {
+      console.error("Failed to play completion sound:", error);
+    }
+  }, []);
+
+  // Generate different types of ambient sounds
+  const createAmbientSound = useCallback(
+    (type: keyof typeof AMBIENT_SOUNDS) => {
+      const audioContext = getAudioContext();
+
+      // Ensure audio context is running (required for mobile)
+      if (audioContext.state === "suspended") {
+        audioContext.resume();
+      }
+
       const bufferSize = audioContext.sampleRate * 2;
       const buffer = audioContext.createBuffer(
         1,
@@ -62,21 +172,89 @@ export default function PomodoroTimer() {
       );
       const data = buffer.getChannelData(0);
 
-      // Generate pink noise (more pleasant than white noise)
-      let b0, b1, b2, b3, b4, b5, b6;
-      b0 = b1 = b2 = b3 = b4 = b5 = b6 = 0.0;
+      // Generate different noise patterns based on sound type
+      switch (type) {
+        case "rain": {
+          // Rain-like filtered noise
+          for (let i = 0; i < bufferSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * 0.3;
+            // Add some variation to simulate raindrops
+            if (Math.random() < 0.02) {
+              data[i] *= 2;
+            }
+          }
+          break;
+        }
 
-      for (let i = 0; i < bufferSize; i++) {
-        const white = Math.random() * 2 - 1;
-        b0 = 0.99886 * b0 + white * 0.0555179;
-        b1 = 0.99332 * b1 + white * 0.0750759;
-        b2 = 0.969 * b2 + white * 0.153852;
-        b3 = 0.8665 * b3 + white * 0.3104856;
-        b4 = 0.55 * b4 + white * 0.5329522;
-        b5 = -0.7616 * b5 - white * 0.016898;
-        data[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.05;
-        data[i] *= 0.11; // Volume adjustment
-        b6 = white * 0.115926;
+        case "forest": {
+          // Brown noise with occasional variations
+          let brownValue = 0;
+          for (let i = 0; i < bufferSize; i++) {
+            const white = Math.random() * 2 - 1;
+            brownValue = (brownValue + white * 0.02) * 0.99;
+            data[i] = brownValue * 0.2;
+            // Add occasional bird-like sounds
+            if (Math.random() < 0.001) {
+              data[i] += Math.sin(i * 0.01) * 0.1;
+            }
+          }
+          break;
+        }
+
+        case "fire": {
+          // Crackling fire simulation
+          for (let i = 0; i < bufferSize; i++) {
+            let sample = (Math.random() * 2 - 1) * 0.25;
+            // Add crackling effect
+            if (Math.random() < 0.05) {
+              sample *= 1.5 + Math.random();
+            }
+            data[i] = sample;
+          }
+          break;
+        }
+
+        case "ocean": {
+          // Wave-like sound with low frequency emphasis
+          for (let i = 0; i < bufferSize; i++) {
+            const white = Math.random() * 2 - 1;
+            const wave = Math.sin(i * 0.001) * 0.3;
+            data[i] = (white * 0.2 + wave) * 0.4;
+          }
+          break;
+        }
+
+        case "wind": {
+          // Wind-like filtered white noise
+          for (let i = 0; i < bufferSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * 0.3;
+          }
+          break;
+        }
+
+        default: {
+          // Default to pink noise
+          let b0 = 0,
+            b1 = 0,
+            b2 = 0,
+            b3 = 0,
+            b4 = 0,
+            b5 = 0,
+            b6 = 0;
+          for (let i = 0; i < bufferSize; i++) {
+            const white = Math.random() * 2 - 1;
+            b0 = 0.99886 * b0 + white * 0.0555179;
+            b1 = 0.99332 * b1 + white * 0.0750759;
+            b2 = 0.969 * b2 + white * 0.153852;
+            b3 = 0.8665 * b3 + white * 0.3104856;
+            b4 = 0.55 * b4 + white * 0.5329522;
+            b5 = -0.7616 * b5 - white * 0.016898;
+            data[i] =
+              (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11;
+            b6 = white * 0.115926;
+          }
+          break;
+        }
       }
 
       const source = audioContext.createBufferSource();
@@ -84,42 +262,129 @@ export default function PomodoroTimer() {
       source.loop = true;
 
       const gainNode = audioContext.createGain();
-      gainNode.gain.value = 0.3;
+      const filterNode = audioContext.createBiquadFilter();
 
-      source.connect(gainNode);
+      // Configure filter based on sound type
+      switch (type) {
+        case "rain": {
+          filterNode.type = "lowpass";
+          filterNode.frequency.value = 1200;
+          filterNode.Q.value = 0.5;
+          break;
+        }
+        case "forest": {
+          filterNode.type = "lowpass";
+          filterNode.frequency.value = 800;
+          filterNode.Q.value = 1;
+          break;
+        }
+        case "fire": {
+          filterNode.type = "highpass";
+          filterNode.frequency.value = 100;
+          filterNode.Q.value = 0.5;
+          break;
+        }
+        case "ocean": {
+          filterNode.type = "lowpass";
+          filterNode.frequency.value = 400;
+          filterNode.Q.value = 2;
+          break;
+        }
+        case "wind": {
+          filterNode.type = "bandpass";
+          filterNode.frequency.value = 600;
+          filterNode.Q.value = 0.8;
+          break;
+        }
+      }
+
+      // Add LFO for some sounds to create variation
+      let lfoGainNode, lfoSource;
+      if (type === "ocean" || type === "wind" || type === "fire") {
+        lfoGainNode = audioContext.createGain();
+        lfoSource = audioContext.createOscillator();
+
+        lfoSource.type = "sine";
+        lfoSource.frequency.value =
+          type === "ocean" ? 0.1 : type === "wind" ? 0.15 : 0.3;
+
+        lfoGainNode.gain.value = 0.3;
+        lfoSource.connect(lfoGainNode);
+        lfoGainNode.connect(gainNode.gain);
+        lfoSource.start();
+      }
+
+      source.connect(filterNode);
+      filterNode.connect(gainNode);
       gainNode.connect(audioContext.destination);
 
-      return { source, gainNode };
+      return { source, gainNode, filterNode, lfoGainNode, lfoSource };
+    },
+    [],
+  );
+
+  // Background sound management
+  useEffect(() => {
+    const startAmbientSound = () => {
+      try {
+        if (ambientSoundRef.current) {
+          ambientSoundRef.current.source.stop();
+          if (ambientSoundRef.current.lfoSource) {
+            ambientSoundRef.current.lfoSource.stop();
+          }
+        }
+
+        if (backgroundSoundEnabled && isRunning && !isCompleted) {
+          ambientSoundRef.current = createAmbientSound(selectedAmbientSound);
+
+          // Set volume
+          const volume = (ambientVolume / 100) * 0.3;
+          ambientSoundRef.current.gainNode.gain.value = volume;
+
+          ambientSoundRef.current.source.start();
+        }
+      } catch (error) {
+        console.error("Failed to start ambient sound:", error);
+      }
     };
 
-    const startBackgroundSound = () => {
-      if (audioContext.state === "suspended") {
-        audioContext.resume();
-      }
-      if (backgroundNoiseRef.current) {
-        backgroundNoiseRef.current.source.stop();
-      }
-      backgroundNoiseRef.current = createBackgroundNoise();
-      backgroundNoiseRef.current.source.start();
-    };
-
-    const stopBackgroundSound = () => {
-      if (backgroundNoiseRef.current) {
-        backgroundNoiseRef.current.source.stop();
-        backgroundNoiseRef.current = null;
+    const stopAmbientSound = () => {
+      if (ambientSoundRef.current) {
+        try {
+          ambientSoundRef.current.source.stop();
+          if (ambientSoundRef.current.lfoSource) {
+            ambientSoundRef.current.lfoSource.stop();
+          }
+          ambientSoundRef.current = null;
+        } catch (error) {
+          console.error("Failed to stop ambient sound:", error);
+        }
       }
     };
 
     if (backgroundSoundEnabled && isRunning && !isCompleted) {
-      startBackgroundSound();
+      startAmbientSound();
     } else {
-      stopBackgroundSound();
+      stopAmbientSound();
     }
 
-    return () => {
-      stopBackgroundSound();
-    };
-  }, [backgroundSoundEnabled, isRunning, isCompleted]);
+    return stopAmbientSound;
+  }, [
+    backgroundSoundEnabled,
+    selectedAmbientSound,
+    isRunning,
+    isCompleted,
+    ambientVolume,
+    createAmbientSound,
+  ]);
+
+  // Update volume when slider changes
+  useEffect(() => {
+    if (ambientSoundRef.current && backgroundSoundEnabled) {
+      const volume = (ambientVolume / 100) * 0.3;
+      ambientSoundRef.current.gainNode.gain.value = volume;
+    }
+  }, [ambientVolume, backgroundSoundEnabled]);
 
   // Timer logic
   useEffect(() => {
@@ -164,64 +429,25 @@ export default function PomodoroTimer() {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isRunning, currentSeconds, mode, completedPomodoros]);
+  }, [
+    isRunning,
+    currentSeconds,
+    mode,
+    completedPomodoros,
+    playCompletionSound,
+  ]);
 
-  const playCompletionSound = () => {
-    const audioContext = new (window.AudioContext ||
-      window.webkitAudioContext)();
-
-    const createCompletionSound = () => {
-      // Create a pleasant chime sound
-      const oscillator1 = audioContext.createOscillator();
-      const oscillator2 = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-
-      oscillator1.type = "sine";
-      oscillator1.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
-      oscillator1.frequency.setValueAtTime(
-        659.25,
-        audioContext.currentTime + 0.1,
-      ); // E5
-      oscillator1.frequency.setValueAtTime(
-        783.99,
-        audioContext.currentTime + 0.2,
-      ); // G5
-
-      oscillator2.type = "sine";
-      oscillator2.frequency.setValueAtTime(261.63, audioContext.currentTime); // C4
-      oscillator2.frequency.setValueAtTime(
-        329.63,
-        audioContext.currentTime + 0.1,
-      ); // E4
-      oscillator2.frequency.setValueAtTime(
-        392.0,
-        audioContext.currentTime + 0.2,
-      ); // G4
-
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(
-        0.01,
-        audioContext.currentTime + 0.8,
-      );
-
-      oscillator1.connect(gainNode);
-      oscillator2.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-
-      oscillator1.start();
-      oscillator2.start();
-      oscillator1.stop(audioContext.currentTime + 0.8);
-      oscillator2.stop(audioContext.currentTime + 0.8);
-    };
-
-    if (audioContext.state === "suspended") {
-      audioContext.resume().then(createCompletionSound);
-    } else {
-      createCompletionSound();
+  const startTimer = async () => {
+    // Initialize audio context on user interaction (required for mobile)
+    try {
+      const audioContext = getAudioContext();
+      if (audioContext.state === "suspended") {
+        await audioContext.resume();
+      }
+    } catch (error) {
+      console.error("Failed to start audio context:", error);
     }
-  };
 
-  const startTimer = () => {
     if (currentSeconds === 0) {
       const seconds = getCurrentModeDuration() * 60;
       setTotalSeconds(seconds);
@@ -381,6 +607,95 @@ export default function PomodoroTimer() {
           )}
         </div>
 
+        {/* Ambient Sound Controls */}
+        <div className="bg-card rounded-2xl p-6 shadow-lg border border-border">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-foreground">
+                Ambient Sounds
+              </h3>
+              <button
+                onClick={() =>
+                  setBackgroundSoundEnabled(!backgroundSoundEnabled)
+                }
+                className={`flex items-center space-x-2 px-4 py-2 rounded-full font-medium transition-all duration-200 ${
+                  backgroundSoundEnabled
+                    ? `${currentConfig.bgColor} text-white`
+                    : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                }`}
+              >
+                {backgroundSoundEnabled ? (
+                  <Volume2 size={16} />
+                ) : (
+                  <VolumeX size={16} />
+                )}
+                <span className="text-sm">
+                  {backgroundSoundEnabled ? "On" : "Off"}
+                </span>
+              </button>
+            </div>
+
+            {/* Sound Selection */}
+            <div className="grid grid-cols-5 gap-2">
+              {Object.entries(AMBIENT_SOUNDS).map(([key, sound]) => {
+                const SoundIcon = sound.icon;
+                return (
+                  <button
+                    key={key}
+                    onClick={() =>
+                      setSelectedAmbientSound(
+                        key as keyof typeof AMBIENT_SOUNDS,
+                      )
+                    }
+                    className={`flex flex-col items-center p-3 rounded-xl transition-all duration-200 ${
+                      selectedAmbientSound === key
+                        ? "bg-primary text-primary-foreground shadow-lg"
+                        : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    }`}
+                  >
+                    <SoundIcon
+                      size={20}
+                      className={
+                        selectedAmbientSound === key ? "" : sound.color
+                      }
+                    />
+                    <span className="text-xs mt-1">{sound.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Volume Control */}
+            {backgroundSoundEnabled && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-foreground">
+                    Volume
+                  </label>
+                  <span className="text-sm text-muted-foreground">
+                    {ambientVolume}%
+                  </span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Volume size={16} className="text-muted-foreground" />
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={ambientVolume}
+                    onChange={(e) => setAmbientVolume(parseInt(e.target.value))}
+                    className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                    style={{
+                      background: `linear-gradient(to right, rgb(59 130 246) 0%, rgb(59 130 246) ${ambientVolume}%, rgb(156 163 175) ${ambientVolume}%, rgb(156 163 175) 100%)`,
+                    }}
+                  />
+                  <Volume2 size={16} className="text-muted-foreground" />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Main Timer */}
         <div className="bg-card rounded-2xl p-8 shadow-lg border border-border">
           <div className="text-center space-y-6">
@@ -451,7 +766,7 @@ export default function PomodoroTimer() {
               {!isRunning ? (
                 <button
                   onClick={startTimer}
-                  className={`flex items-center space-x-2 px-8 py-4 rounded-full text-white font-medium transition-all duration-200 shadow-lg hover:shadow-xl ${currentConfig.bgColor} hover:scale-105`}
+                  className={`flex items-center space-x-2 px-8 py-4 rounded-full text-white font-medium transition-all duration-200 shadow-lg hover:shadow-xl ${currentConfig.bgColor} hover:scale-105 active:scale-95`}
                 >
                   <Play size={20} />
                   <span>{currentSeconds > 0 ? "Resume" : "Start"}</span>
@@ -459,7 +774,7 @@ export default function PomodoroTimer() {
               ) : (
                 <button
                   onClick={pauseTimer}
-                  className="flex items-center space-x-2 px-8 py-4 bg-secondary hover:bg-secondary/80 text-secondary-foreground rounded-full font-medium transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
+                  className="flex items-center space-x-2 px-8 py-4 bg-secondary hover:bg-secondary/80 text-secondary-foreground rounded-full font-medium transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
                 >
                   <Pause size={20} />
                   <span>Pause</span>
@@ -468,30 +783,11 @@ export default function PomodoroTimer() {
 
               <button
                 onClick={resetTimer}
-                className="flex items-center justify-center w-14 h-14 bg-muted hover:bg-accent text-muted-foreground hover:text-accent-foreground rounded-full transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
+                className="flex items-center justify-center w-14 h-14 bg-muted hover:bg-accent text-muted-foreground hover:text-accent-foreground rounded-full transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
               >
                 <RotateCcw size={20} />
               </button>
             </div>
-
-            {/* Background Sound Toggle */}
-            <button
-              onClick={() => setBackgroundSoundEnabled(!backgroundSoundEnabled)}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-full font-medium transition-all duration-200 ${
-                backgroundSoundEnabled
-                  ? `${currentConfig.bgColor} text-white`
-                  : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-              }`}
-            >
-              {backgroundSoundEnabled ? (
-                <Volume2 size={16} />
-              ) : (
-                <VolumeX size={16} />
-              )}
-              <span className="text-sm">
-                Focus Sounds {backgroundSoundEnabled ? "On" : "Off"}
-              </span>
-            </button>
           </div>
         </div>
 
