@@ -298,48 +298,40 @@ export default function PomodoroTimer() {
   const Icon = currentConfig.icon;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted p-4">
       <div className="max-w-2xl mx-auto space-y-8">
         {/* Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold text-slate-800 dark:text-slate-100">
-            Pomodoro Timer
-          </h1>
-          <p className="text-slate-600 dark:text-slate-300">
+          <h1 className="text-4xl font-bold text-foreground">Pomodoro Timer</h1>
+          <p className="text-muted-foreground">
             Stay focused and productive with the Pomodoro Technique
           </p>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-4">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 text-center shadow-lg border border-slate-200 dark:border-slate-700">
-            <div className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+          <div className="bg-card rounded-2xl p-4 text-center shadow-lg border border-border">
+            <div className="text-2xl font-bold text-foreground">
               {completedPomodoros}
             </div>
-            <div className="text-sm text-slate-600 dark:text-slate-400">
-              Completed
-            </div>
+            <div className="text-sm text-muted-foreground">Completed</div>
           </div>
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 text-center shadow-lg border border-slate-200 dark:border-slate-700">
-            <div className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+          <div className="bg-card rounded-2xl p-4 text-center shadow-lg border border-border">
+            <div className="text-2xl font-bold text-foreground">
               {currentCycle}
             </div>
-            <div className="text-sm text-slate-600 dark:text-slate-400">
-              Cycle
-            </div>
+            <div className="text-sm text-muted-foreground">Cycle</div>
           </div>
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 text-center shadow-lg border border-slate-200 dark:border-slate-700">
+          <div className="bg-card rounded-2xl p-4 text-center shadow-lg border border-border">
             <div className={`text-2xl font-bold ${currentConfig.color}`}>
               {Math.round(progress)}%
             </div>
-            <div className="text-sm text-slate-600 dark:text-slate-400">
-              Progress
-            </div>
+            <div className="text-sm text-muted-foreground">Progress</div>
           </div>
         </div>
 
         {/* Mode Switcher */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
+        <div className="bg-card rounded-2xl p-6 shadow-lg border border-border">
           <div className="grid grid-cols-3 gap-2 mb-4">
             {(
               Object.entries(modeConfig) as [
@@ -353,7 +345,7 @@ export default function PomodoroTimer() {
                 className={`p-3 rounded-xl transition-all duration-200 font-medium ${
                   mode === key
                     ? `${config.bgColor} text-white shadow-lg`
-                    : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
+                    : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                 }`}
               >
                 {config.label}
@@ -364,7 +356,7 @@ export default function PomodoroTimer() {
           {!isRunning && currentSeconds === 0 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                <label className="text-sm font-medium text-foreground">
                   {currentConfig.label} Duration
                 </label>
                 <div className="flex items-center space-x-2">
@@ -380,11 +372,9 @@ export default function PomodoroTimer() {
                         setShortBreakMinutes(value);
                       else setLongBreakMinutes(value);
                     }}
-                    className="w-16 px-2 py-1 text-center rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200"
+                    className="w-16 px-2 py-1 text-center rounded-lg border border-border bg-background text-foreground"
                   />
-                  <span className="text-sm text-slate-600 dark:text-slate-400">
-                    min
-                  </span>
+                  <span className="text-sm text-muted-foreground">min</span>
                 </div>
               </div>
             </div>
@@ -392,7 +382,7 @@ export default function PomodoroTimer() {
         </div>
 
         {/* Main Timer */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-lg border border-slate-200 dark:border-slate-700">
+        <div className="bg-card rounded-2xl p-8 shadow-lg border border-border">
           <div className="text-center space-y-6">
             {/* Mode indicator */}
             <div className="flex items-center justify-center space-x-2">
@@ -402,9 +392,7 @@ export default function PomodoroTimer() {
               </h2>
             </div>
 
-            <p className="text-slate-600 dark:text-slate-400">
-              {currentConfig.description}
-            </p>
+            <p className="text-muted-foreground">{currentConfig.description}</p>
 
             {/* Circular Timer */}
             <div className="relative inline-block">
@@ -417,7 +405,7 @@ export default function PomodoroTimer() {
                   stroke="currentColor"
                   strokeWidth="8"
                   fill="transparent"
-                  className="text-slate-200 dark:text-slate-700"
+                  className="text-muted-foreground"
                 />
                 {/* Progress circle */}
                 <circle
@@ -436,7 +424,7 @@ export default function PomodoroTimer() {
 
               {/* Time display */}
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <div className="text-5xl font-bold font-mono tabular-nums text-slate-800 dark:text-slate-100">
+                <div className="text-5xl font-bold font-mono tabular-nums text-foreground">
                   {currentSeconds > 0
                     ? formatTime(currentSeconds)
                     : formatTime(getCurrentModeDuration() * 60)}
@@ -449,7 +437,7 @@ export default function PomodoroTimer() {
                   </div>
                 )}
                 {isRunning && !isCompleted && (
-                  <div className="text-sm text-slate-500 dark:text-slate-400 mt-2 animate-pulse">
+                  <div className="text-sm text-muted-foreground mt-2 animate-pulse">
                     {mode === "work"
                       ? "Stay focused..."
                       : "Enjoy your break..."}
@@ -471,7 +459,7 @@ export default function PomodoroTimer() {
               ) : (
                 <button
                   onClick={pauseTimer}
-                  className="flex items-center space-x-2 px-8 py-4 bg-slate-600 hover:bg-slate-700 text-white rounded-full font-medium transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
+                  className="flex items-center space-x-2 px-8 py-4 bg-secondary hover:bg-secondary/80 text-secondary-foreground rounded-full font-medium transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
                 >
                   <Pause size={20} />
                   <span>Pause</span>
@@ -480,7 +468,7 @@ export default function PomodoroTimer() {
 
               <button
                 onClick={resetTimer}
-                className="flex items-center justify-center w-14 h-14 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-full transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
+                className="flex items-center justify-center w-14 h-14 bg-muted hover:bg-accent text-muted-foreground hover:text-accent-foreground rounded-full transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
               >
                 <RotateCcw size={20} />
               </button>
@@ -492,7 +480,7 @@ export default function PomodoroTimer() {
               className={`flex items-center space-x-2 px-4 py-2 rounded-full font-medium transition-all duration-200 ${
                 backgroundSoundEnabled
                   ? `${currentConfig.bgColor} text-white`
-                  : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600"
+                  : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
               }`}
             >
               {backgroundSoundEnabled ? (
@@ -509,12 +497,12 @@ export default function PomodoroTimer() {
 
         {/* Progress Bar */}
         {totalSeconds > 0 && (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200 dark:border-slate-700">
-            <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400 mb-2">
+          <div className="bg-card rounded-2xl p-6 shadow-lg border border-border">
+            <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
               <span>Session Progress</span>
               <span>{Math.round(progress)}%</span>
             </div>
-            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3">
+            <div className="w-full bg-muted rounded-full h-3">
               <div
                 className={`h-3 rounded-full transition-all duration-1000 ease-linear ${currentConfig.bgColor}`}
                 style={{ width: `${progress}%` }}
