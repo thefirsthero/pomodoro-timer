@@ -584,11 +584,6 @@ export default function PomodoroTimer() {
     <div className="p-3 overflow-hidden">
       <style dangerouslySetInnerHTML={{ __html: sliderThumbStyle }} />
       <div className="max-w-7xl mx-auto flex flex-col h-full">
-        {/* Header */}
-        <div className="text-center mb-3">
-          <h1 className="text-xl font-bold text-foreground">Pomodoro Timer</h1>
-        </div>
-
         {/* Main Content Grid */}
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-3 min-h-0">
           {/* Left Column - Timer and Controls */}
