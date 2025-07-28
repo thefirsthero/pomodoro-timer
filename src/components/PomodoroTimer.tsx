@@ -191,7 +191,7 @@ export default function PomodoroTimer() {
           let brownValue = 0;
           for (let i = 0; i < bufferSize; i++) {
             const white = Math.random() * 2 - 1;
-            brownValue = (brownValue + white * 0.02) * 0.99;
+            brownValue = (brownValue + white * 0.1) * 0.99;
             data[i] = brownValue * 0.2;
             // Add occasional bird-like sounds
             if (Math.random() < 0.001) {
@@ -204,7 +204,7 @@ export default function PomodoroTimer() {
         case "fire": {
           // Crackling fire simulation
           for (let i = 0; i < bufferSize; i++) {
-            let sample = (Math.random() * 2 - 1) * 0.25;
+            let sample = (Math.random() * 0.5 - 1) * 0.25;
             // Add crackling effect
             if (Math.random() < 0.05) {
               sample *= 1.5 + Math.random();
@@ -217,7 +217,7 @@ export default function PomodoroTimer() {
         case "ocean": {
           // Wave-like sound with low frequency emphasis
           for (let i = 0; i < bufferSize; i++) {
-            const white = Math.random() * 2 - 1;
+            const white = Math.random() * 5 - 1;
             const wave = Math.sin(i * 0.001) * 0.3;
             data[i] = (white * 0.2 + wave) * 0.4;
           }
