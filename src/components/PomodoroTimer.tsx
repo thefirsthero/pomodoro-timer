@@ -103,12 +103,13 @@ export default function PomodoroTimer() {
   };
 
   // Completion sound
-  const playCompletionSound = useCallback(() => {
+  const playCompletionSound = useCallback(async () => {
     try {
       const audioContext = getAudioContext();
 
-      if (audioContext.state === "suspended") {
-        audioContext.resume();
+      // Ensure context is running before playing sound
+      if (audioContext.state !== "running") {
+        await audioContext.resume();
       }
 
       // Create a pleasant chime sound
@@ -162,10 +163,7 @@ export default function PomodoroTimer() {
     (type: keyof typeof AMBIENT_SOUNDS) => {
       const audioContext = getAudioContext();
 
-      // Ensure audio context is running (required for mobile)
-      if (audioContext.state === "suspended") {
-        audioContext.resume();
-      }
+      // Don't try to resume here - this should be done before calling this function
 
       const bufferSize = audioContext.sampleRate * 2;
       const buffer = audioContext.createBuffer(
@@ -328,16 +326,27 @@ export default function PomodoroTimer() {
 
   // Background sound management
   useEffect(() => {
-    const startAmbientSound = () => {
+    const startAmbientSound = async () => {
       try {
         if (ambientSoundRef.current) {
-          ambientSoundRef.current.source.stop();
-          if (ambientSoundRef.current.lfoSource) {
-            ambientSoundRef.current.lfoSource.stop();
+          try {
+            ambientSoundRef.current.source.stop();
+            if (ambientSoundRef.current.lfoSource) {
+              ambientSoundRef.current.lfoSource.stop();
+            }
+          } catch {
+            // Ignore errors when stopping already stopped sources
           }
         }
 
         if (backgroundSoundEnabled && isRunning && !isCompleted) {
+          const audioContext = getAudioContext();
+
+          // Ensure audio context is running before creating ambient sound
+          if (audioContext.state !== "running") {
+            await audioContext.resume();
+          }
+
           ambientSoundRef.current = createAmbientSound(selectedAmbientSound);
 
           // Set volume
@@ -360,7 +369,8 @@ export default function PomodoroTimer() {
           }
           ambientSoundRef.current = null;
         } catch (error) {
-          console.error("Failed to stop ambient sound:", error);
+          // Ignore errors when stopping already stopped sources
+          console.warn("Error stopping ambient sound:", error);
         }
       }
     };
@@ -442,11 +452,15 @@ export default function PomodoroTimer() {
   ]);
 
   const startTimer = async () => {
-    // Initialize audio context on user interaction (required for mobile)
+    // Initialize and resume audio context on user interaction (required for mobile)
     try {
       const audioContext = getAudioContext();
-      if (audioContext.state === "suspended") {
+      console.log("AudioContext state before resume:", audioContext.state);
+
+      // Always try to resume on user interaction for mobile compatibility
+      if (audioContext.state !== "running") {
         await audioContext.resume();
+        console.log("AudioContext state after resume:", audioContext.state);
       }
     } catch (error) {
       console.error("Failed to start audio context:", error);
