@@ -489,18 +489,16 @@ export default function PomodoroTimer() {
     totalSeconds > 0
       ? ((totalSeconds - currentSeconds) / totalSeconds) * 100
       : 0;
-  const circumference = 2 * Math.PI * 90;
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
 
   // Mode configurations
   const modeConfig = {
     work: {
-      label: "Focus Time",
+      label: "Focus",
       color: "text-red-500",
       bgColor: "bg-red-500",
       borderColor: "border-red-500",
       icon: Target,
-      description: "Time to focus and get work done!",
+      description: "Time to focus!",
       thumbColor: "#ef4444", // red-500
     },
     shortBreak: {
@@ -509,7 +507,7 @@ export default function PomodoroTimer() {
       bgColor: "bg-green-500",
       borderColor: "border-green-500",
       icon: Coffee,
-      description: "Take a short break and recharge",
+      description: "Quick break",
       thumbColor: "#22c55e", // green-500
     },
     longBreak: {
@@ -518,7 +516,7 @@ export default function PomodoroTimer() {
       bgColor: "bg-blue-500",
       borderColor: "border-blue-500",
       icon: Coffee,
-      description: "Time for a longer break!",
+      description: "Extended break",
       thumbColor: "#3b82f6", // blue-500
     },
   };
@@ -544,8 +542,8 @@ export default function PomodoroTimer() {
   const sliderThumbStyle = `
     input[type="range"]::-webkit-slider-thumb {
       appearance: none;
-      height: 20px;
-      width: 20px;
+      height: 16px;
+      width: 16px;
       border-radius: 50%;
       background: ${currentConfig.thumbColor};
       cursor: pointer;
@@ -554,8 +552,8 @@ export default function PomodoroTimer() {
     }
     
     input[type="range"]::-moz-range-thumb {
-      height: 20px;
-      width: 20px;
+      height: 16px;
+      width: 16px;
       border-radius: 50%;
       background: ${currentConfig.thumbColor};
       cursor: pointer;
@@ -565,291 +563,298 @@ export default function PomodoroTimer() {
   `;
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="p-3 overflow-hidden">
       <style dangerouslySetInnerHTML={{ __html: sliderThumbStyle }} />
-      <div className="max-w-2xl mx-auto space-y-8">
+      <div className="max-w-7xl mx-auto flex flex-col h-full">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold text-foreground">Pomodoro Timer</h1>
-          <p className="text-muted-foreground">
-            Stay focused and productive with the Pomodoro Technique
-          </p>
+        <div className="text-center mb-3">
+          <h1 className="text-xl font-bold text-foreground">Pomodoro Timer</h1>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-4">
-          <div className="bg-card rounded-2xl p-4 text-center shadow-lg border border-border">
-            <div className="text-2xl font-bold text-foreground">
-              {completedPomodoros}
-            </div>
-            <div className="text-sm text-muted-foreground">Completed</div>
-          </div>
-          <div className="bg-card rounded-2xl p-4 text-center shadow-lg border border-border">
-            <div className="text-2xl font-bold text-foreground">
-              {currentCycle}
-            </div>
-            <div className="text-sm text-muted-foreground">Cycle</div>
-          </div>
-          <div className="bg-card rounded-2xl p-4 text-center shadow-lg border border-border">
-            <div className={`text-2xl font-bold ${currentConfig.color}`}>
-              {Math.round(progress)}%
-            </div>
-            <div className="text-sm text-muted-foreground">Progress</div>
-          </div>
-        </div>
+        {/* Main Content Grid */}
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-3 min-h-0">
+          {/* Left Column - Timer and Controls */}
+          <div className="lg:col-span-2 flex flex-col space-y-3">
+            {/* Timer Display */}
+            <div className="bg-card rounded-lg p-3 shadow-lg border border-border flex-1 flex flex-col justify-center">
+              <div className="text-center space-y-2">
+                {/* Mode indicator */}
+                <div className="flex items-center justify-center space-x-2">
+                  <Icon size={18} className={currentConfig.color} />
+                  <h2
+                    className={`text-lg font-semibold ${currentConfig.color}`}
+                  >
+                    {currentConfig.label}
+                  </h2>
+                </div>
 
-        {/* Mode Switcher */}
-        <div className="bg-card rounded-2xl p-6 shadow-lg border border-border">
-          <div className="grid grid-cols-3 gap-2 mb-4">
-            {(
-              Object.entries(modeConfig) as [
-                keyof typeof modeConfig,
-                (typeof modeConfig)[keyof typeof modeConfig],
-              ][]
-            ).map(([key, config]) => (
-              <button
-                key={key}
-                onClick={() => switchMode(key)}
-                className={`p-3 rounded-xl transition-all duration-200 font-medium ${
-                  mode === key
-                    ? `${config.bgColor} text-white shadow-lg`
-                    : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                }`}
-              >
-                {config.label}
-              </button>
-            ))}
-          </div>
+                {/* Circular Timer */}
+                <div className="relative inline-block">
+                  <svg className="transform -rotate-90 w-40 h-40">
+                    {/* Background circle */}
+                    <circle
+                      cx="80"
+                      cy="80"
+                      r="60"
+                      stroke="currentColor"
+                      strokeWidth="5"
+                      fill="transparent"
+                      className="text-muted-foreground"
+                    />
+                    {/* Progress circle */}
+                    <circle
+                      cx="80"
+                      cy="80"
+                      r="60"
+                      stroke="currentColor"
+                      strokeWidth="5"
+                      fill="transparent"
+                      strokeDasharray={2 * Math.PI * 60}
+                      strokeDashoffset={
+                        2 * Math.PI * 60 - (progress / 100) * 2 * Math.PI * 60
+                      }
+                      strokeLinecap="round"
+                      className={`transition-all duration-1000 ease-linear ${currentConfig.color}`}
+                    />
+                  </svg>
 
-          {!isRunning && currentSeconds === 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-foreground">
-                  {currentConfig.label} Duration
-                </label>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="number"
-                    min="1"
-                    max="120"
-                    value={getCurrentModeDuration()}
-                    onChange={(e) => {
-                      const value = Math.max(1, parseInt(e.target.value) || 1);
-                      if (mode === "work") setWorkMinutes(value);
-                      else if (mode === "shortBreak")
-                        setShortBreakMinutes(value);
-                      else setLongBreakMinutes(value);
-                    }}
-                    className="w-16 px-2 py-1 text-center rounded-lg border border-border bg-background text-foreground"
-                  />
-                  <span className="text-sm text-muted-foreground">min</span>
+                  {/* Time display */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <div className="text-2xl font-bold font-mono tabular-nums text-foreground">
+                      {currentSeconds > 0
+                        ? formatTime(currentSeconds)
+                        : formatTime(getCurrentModeDuration() * 60)}
+                    </div>
+                    {isCompleted && (
+                      <div
+                        className={`text-xs font-medium mt-1 ${currentConfig.color}`}
+                      >
+                        {mode === "work" ? "Great work!" : "Break over!"}
+                      </div>
+                    )}
+                    {isRunning && !isCompleted && (
+                      <div className="text-xs text-muted-foreground mt-1 animate-pulse">
+                        {mode === "work" ? "Stay focused..." : "Relax..."}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Controls */}
+                <div className="flex items-center justify-center space-x-2">
+                  {!isRunning ? (
+                    <button
+                      onClick={startTimer}
+                      className={`flex items-center space-x-2 px-4 py-2 rounded-full text-white font-medium transition-all duration-200 shadow-lg hover:shadow-xl ${currentConfig.bgColor} hover:scale-105 active:scale-95`}
+                    >
+                      <Play size={14} />
+                      <span className="text-sm">
+                        {currentSeconds > 0 ? "Resume" : "Start"}
+                      </span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={pauseTimer}
+                      className="flex items-center space-x-2 px-4 py-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground rounded-full font-medium transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+                    >
+                      <Pause size={14} />
+                      <span className="text-sm">Pause</span>
+                    </button>
+                  )}
+
+                  <button
+                    onClick={resetTimer}
+                    className="flex items-center justify-center w-10 h-10 bg-muted hover:bg-accent text-muted-foreground hover:text-accent-foreground rounded-full transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+                  >
+                    <RotateCcw size={14} />
+                  </button>
                 </div>
               </div>
             </div>
-          )}
-        </div>
 
-        {/* Ambient Sound Controls */}
-        <div className="bg-card rounded-2xl p-6 shadow-lg border border-border">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-foreground">
-                Ambient Sounds
-              </h3>
-              <button
-                onClick={() =>
-                  setBackgroundSoundEnabled(!backgroundSoundEnabled)
-                }
-                className={`flex items-center space-x-2 px-4 py-2 rounded-full font-medium transition-all duration-200 ${
-                  backgroundSoundEnabled
-                    ? `${currentConfig.bgColor} text-white`
-                    : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                }`}
-              >
-                {backgroundSoundEnabled ? (
-                  <Volume2 size={16} />
-                ) : (
-                  <VolumeX size={16} />
-                )}
-                <span className="text-sm">
-                  {backgroundSoundEnabled ? "On" : "Off"}
-                </span>
-              </button>
-            </div>
-
-            {/* Sound Selection */}
-            <div className="grid grid-cols-5 gap-2">
-              {Object.entries(AMBIENT_SOUNDS).map(([key, sound]) => {
-                const SoundIcon = sound.icon;
-                return (
-                  <button
-                    key={key}
-                    onClick={() =>
-                      setSelectedAmbientSound(
-                        key as keyof typeof AMBIENT_SOUNDS,
-                      )
-                    }
-                    className={`flex flex-col items-center p-3 rounded-xl transition-all duration-200 ${
-                      selectedAmbientSound === key
-                        ? "bg-primary text-primary-foreground shadow-lg"
-                        : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                    }`}
-                  >
-                    <SoundIcon
-                      size={20}
-                      className={
-                        selectedAmbientSound === key ? "" : sound.color
-                      }
-                    />
-                    <span className="text-xs mt-1">{sound.name}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Volume Control */}
-            {backgroundSoundEnabled && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-foreground">
-                    Volume
-                  </label>
-                  <span className="text-sm text-muted-foreground">
-                    {ambientVolume}%
-                  </span>
+            {/* Progress Bar - Only show when active */}
+            {totalSeconds > 0 && (
+              <div className="bg-card rounded-lg p-2 shadow-lg border border-border">
+                <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                  <span>Progress: {Math.round(progress)}%</span>
+                  <span>Remaining: {formatTime(currentSeconds)}</span>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <Volume size={16} className={currentConfig.color} />
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={ambientVolume}
-                    onChange={(e) => setAmbientVolume(parseInt(e.target.value))}
-                    className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-                    style={sliderStyles}
+                <div className="w-full bg-muted rounded-full h-1.5">
+                  <div
+                    className={`h-1.5 rounded-full transition-all duration-1000 ease-linear ${currentConfig.bgColor}`}
+                    style={{ width: `${progress}%` }}
                   />
-                  <Volume2 size={16} className={currentConfig.color} />
                 </div>
               </div>
             )}
           </div>
-        </div>
 
-        {/* Main Timer */}
-        <div className="bg-card rounded-2xl p-8 shadow-lg border border-border">
-          <div className="text-center space-y-6">
-            {/* Mode indicator */}
-            <div className="flex items-center justify-center space-x-2">
-              <Icon size={24} className={currentConfig.color} />
-              <h2 className={`text-2xl font-semibold ${currentConfig.color}`}>
-                {currentConfig.label}
-              </h2>
-            </div>
-
-            <p className="text-muted-foreground">{currentConfig.description}</p>
-
-            {/* Circular Timer */}
-            <div className="relative inline-block">
-              <svg className="transform -rotate-90 w-64 h-64">
-                {/* Background circle */}
-                <circle
-                  cx="128"
-                  cy="128"
-                  r="90"
-                  stroke="currentColor"
-                  strokeWidth="8"
-                  fill="transparent"
-                  className="text-muted-foreground"
-                />
-                {/* Progress circle */}
-                <circle
-                  cx="128"
-                  cy="128"
-                  r="90"
-                  stroke="currentColor"
-                  strokeWidth="8"
-                  fill="transparent"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={strokeDashoffset}
-                  strokeLinecap="round"
-                  className={`transition-all duration-1000 ease-linear ${currentConfig.color}`}
-                />
-              </svg>
-
-              {/* Time display */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <div className="text-5xl font-bold font-mono tabular-nums text-foreground">
-                  {currentSeconds > 0
-                    ? formatTime(currentSeconds)
-                    : formatTime(getCurrentModeDuration() * 60)}
+          {/* Right Column - Settings and Stats */}
+          <div className="flex flex-col space-y-4">
+            {/* Stats */}
+            <div className="bg-card rounded-xl p-4 shadow-lg border border-border">
+              <h3 className="text-sm font-semibold text-foreground mb-3">
+                Session Stats
+              </h3>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-foreground">
+                    {completedPomodoros}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Completed</div>
                 </div>
-                {isCompleted && (
-                  <div
-                    className={`text-lg font-medium mt-2 ${currentConfig.color}`}
-                  >
-                    {mode === "work" ? "Great work!" : "Break time over!"}
+                <div className="text-center">
+                  <div className="text-lg font-bold text-foreground">
+                    {currentCycle}
                   </div>
-                )}
-                {isRunning && !isCompleted && (
-                  <div className="text-sm text-muted-foreground mt-2 animate-pulse">
-                    {mode === "work"
-                      ? "Stay focused..."
-                      : "Enjoy your break..."}
+                  <div className="text-xs text-muted-foreground">Cycle</div>
+                </div>
+                <div className="text-center">
+                  <div className={`text-lg font-bold ${currentConfig.color}`}>
+                    {Math.round(progress)}%
                   </div>
-                )}
+                  <div className="text-xs text-muted-foreground">Progress</div>
+                </div>
               </div>
             </div>
 
-            {/* Controls */}
-            <div className="flex items-center justify-center space-x-4">
-              {!isRunning ? (
-                <button
-                  onClick={startTimer}
-                  className={`flex items-center space-x-2 px-8 py-4 rounded-full text-white font-medium transition-all duration-200 shadow-lg hover:shadow-xl ${currentConfig.bgColor} hover:scale-105 active:scale-95`}
-                >
-                  <Play size={20} />
-                  <span>{currentSeconds > 0 ? "Resume" : "Start"}</span>
-                </button>
-              ) : (
-                <button
-                  onClick={pauseTimer}
-                  className="flex items-center space-x-2 px-8 py-4 bg-secondary hover:bg-secondary/80 text-secondary-foreground rounded-full font-medium transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
-                >
-                  <Pause size={20} />
-                  <span>Pause</span>
-                </button>
-              )}
+            {/* Mode Switcher */}
+            <div className="bg-card rounded-xl p-4 shadow-lg border border-border">
+              <h3 className="text-sm font-semibold text-foreground mb-3">
+                Mode
+              </h3>
+              <div className="grid grid-cols-3 gap-1 mb-3">
+                {(
+                  Object.entries(modeConfig) as [
+                    keyof typeof modeConfig,
+                    (typeof modeConfig)[keyof typeof modeConfig],
+                  ][]
+                ).map(([key, config]) => (
+                  <button
+                    key={key}
+                    onClick={() => switchMode(key)}
+                    className={`p-2 rounded-lg transition-all duration-200 font-medium text-xs ${
+                      mode === key
+                        ? `${config.bgColor} text-white shadow-lg`
+                        : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    }`}
+                  >
+                    {config.label}
+                  </button>
+                ))}
+              </div>
 
-              <button
-                onClick={resetTimer}
-                className="flex items-center justify-center w-14 h-14 bg-muted hover:bg-accent text-muted-foreground hover:text-accent-foreground rounded-full transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
-              >
-                <RotateCcw size={20} />
-              </button>
+              {!isRunning && currentSeconds === 0 && (
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-foreground">Duration:</span>
+                  <div className="flex items-center space-x-1">
+                    <input
+                      type="number"
+                      min="1"
+                      max="120"
+                      value={getCurrentModeDuration()}
+                      onChange={(e) => {
+                        const value = Math.max(
+                          1,
+                          parseInt(e.target.value) || 1,
+                        );
+                        if (mode === "work") setWorkMinutes(value);
+                        else if (mode === "shortBreak")
+                          setShortBreakMinutes(value);
+                        else setLongBreakMinutes(value);
+                      }}
+                      className="w-12 px-1 py-1 text-xs text-center rounded border border-border bg-background text-foreground"
+                    />
+                    <span className="text-xs text-muted-foreground">min</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Ambient Sound Controls */}
+            <div className="bg-card rounded-xl p-4 shadow-lg border border-border flex-1">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-foreground">
+                  Ambient Sounds
+                </h3>
+                <button
+                  onClick={() =>
+                    setBackgroundSoundEnabled(!backgroundSoundEnabled)
+                  }
+                  className={`flex items-center space-x-1 px-2 py-1 rounded-full font-medium transition-all duration-200 text-xs ${
+                    backgroundSoundEnabled
+                      ? `${currentConfig.bgColor} text-white`
+                      : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  }`}
+                >
+                  {backgroundSoundEnabled ? (
+                    <Volume2 size={12} />
+                  ) : (
+                    <VolumeX size={12} />
+                  )}
+                  <span>{backgroundSoundEnabled ? "On" : "Off"}</span>
+                </button>
+              </div>
+
+              {/* Sound Selection */}
+              <div className="grid grid-cols-5 gap-1 mb-3">
+                {Object.entries(AMBIENT_SOUNDS).map(([key, sound]) => {
+                  const SoundIcon = sound.icon;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() =>
+                        setSelectedAmbientSound(
+                          key as keyof typeof AMBIENT_SOUNDS,
+                        )
+                      }
+                      className={`flex flex-col items-center p-2 rounded-lg transition-all duration-200 ${
+                        selectedAmbientSound === key
+                          ? "bg-primary text-primary-foreground shadow-lg"
+                          : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      }`}
+                    >
+                      <SoundIcon
+                        size={14}
+                        className={
+                          selectedAmbientSound === key ? "" : sound.color
+                        }
+                      />
+                      <span className="text-xs mt-1">{sound.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Volume Control */}
+              {backgroundSoundEnabled && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-foreground">Volume</span>
+                    <span className="text-xs text-muted-foreground">
+                      {ambientVolume}%
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Volume size={12} className={currentConfig.color} />
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={ambientVolume}
+                      onChange={(e) =>
+                        setAmbientVolume(parseInt(e.target.value))
+                      }
+                      className="flex-1 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                      style={sliderStyles}
+                    />
+                    <Volume2 size={12} className={currentConfig.color} />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
-
-        {/* Progress Bar */}
-        {totalSeconds > 0 && (
-          <div className="bg-card rounded-2xl p-6 shadow-lg border border-border">
-            <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
-              <span>Session Progress</span>
-              <span>{Math.round(progress)}%</span>
-            </div>
-            <div className="w-full bg-muted rounded-full h-3">
-              <div
-                className={`h-3 rounded-full transition-all duration-1000 ease-linear ${currentConfig.bgColor}`}
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mt-2">
-              <span>Elapsed: {formatTime(totalSeconds - currentSeconds)}</span>
-              <span>Remaining: {formatTime(currentSeconds)}</span>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
