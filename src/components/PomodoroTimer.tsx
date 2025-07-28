@@ -717,91 +717,180 @@ export default function PomodoroTimer() {
           </div>
 
           {/* Right Column - Settings and Stats */}
-          <div className="flex flex-col space-y-4">
-            {/* Stats */}
-            <div className="bg-card rounded-xl p-4 shadow-lg border border-border">
-              <h3 className="text-sm font-semibold text-foreground mb-3">
-                Session Stats
-              </h3>
-              <div className="grid grid-cols-3 gap-3">
-                <div className="text-center">
-                  <div className="text-lg font-bold text-foreground">
-                    {completedPomodoros}
+          <div className="flex flex-col space-y-3 lg:space-y-4">
+            {/* Mobile: Combined Stats and Mode in one row */}
+            <div className="grid grid-cols-2 gap-3 lg:hidden">
+              {/* Stats */}
+              <div className="bg-card rounded-xl p-3 shadow-lg border border-border">
+                <h3 className="text-xs font-semibold text-foreground mb-2">
+                  Stats
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="text-center">
+                    <div className="text-sm font-bold text-foreground">
+                      {completedPomodoros}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Done</div>
                   </div>
-                  <div className="text-xs text-muted-foreground">Completed</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-lg font-bold text-foreground">
-                    {currentCycle}
+                  <div className="text-center">
+                    <div className="text-sm font-bold text-foreground">
+                      {currentCycle}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Cycle</div>
                   </div>
-                  <div className="text-xs text-muted-foreground">Cycle</div>
                 </div>
-                <div className="text-center">
-                  <div className={`text-lg font-bold ${currentConfig.color}`}>
-                    {Math.round(progress)}%
+              </div>
+
+              {/* Mode Switcher - Mobile Compact */}
+              <div className="bg-card rounded-xl p-3 shadow-lg border border-border">
+                <h3 className="text-xs font-semibold text-foreground mb-2">
+                  Mode
+                </h3>
+                <div className="grid grid-cols-3 gap-1 mb-2">
+                  {(
+                    Object.entries(modeConfig) as [
+                      keyof typeof modeConfig,
+                      (typeof modeConfig)[keyof typeof modeConfig],
+                    ][]
+                  ).map(([key, config]) => (
+                    <button
+                      key={key}
+                      onClick={() => switchMode(key)}
+                      className={`p-1.5 rounded-md transition-all duration-200 font-medium text-xs ${
+                        mode === key
+                          ? `${config.bgColor} text-white shadow-lg`
+                          : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      }`}
+                    >
+                      {key === "work"
+                        ? "Focus"
+                        : key === "shortBreak"
+                        ? "Short"
+                        : "Long"}
+                    </button>
+                  ))}
+                </div>
+
+                {!isRunning && currentSeconds === 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-foreground">Min:</span>
+                    <div className="flex items-center space-x-1">
+                      <input
+                        type="number"
+                        min="1"
+                        max="120"
+                        value={getCurrentModeDuration()}
+                        onChange={(e) => {
+                          const value = Math.max(
+                            1,
+                            parseInt(e.target.value) || 1,
+                          );
+                          if (mode === "work") setWorkMinutes(value);
+                          else if (mode === "shortBreak")
+                            setShortBreakMinutes(value);
+                          else setLongBreakMinutes(value);
+                        }}
+                        className="w-10 px-1 py-1 text-sm text-center rounded border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                        style={{ fontSize: "16px" }}
+                      />
+                    </div>
                   </div>
-                  <div className="text-xs text-muted-foreground">Progress</div>
-                </div>
+                )}
               </div>
             </div>
 
-            {/* Mode Switcher */}
-            <div className="bg-card rounded-xl p-4 shadow-lg border border-border">
-              <h3 className="text-sm font-semibold text-foreground mb-3">
-                Mode
-              </h3>
-              <div className="grid grid-cols-3 gap-1 mb-3">
-                {(
-                  Object.entries(modeConfig) as [
-                    keyof typeof modeConfig,
-                    (typeof modeConfig)[keyof typeof modeConfig],
-                  ][]
-                ).map(([key, config]) => (
-                  <button
-                    key={key}
-                    onClick={() => switchMode(key)}
-                    className={`p-2 rounded-lg transition-all duration-200 font-medium text-xs ${
-                      mode === key
-                        ? `${config.bgColor} text-white shadow-lg`
-                        : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                    }`}
-                  >
-                    {config.label}
-                  </button>
-                ))}
-              </div>
-
-              {!isRunning && currentSeconds === 0 && (
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-foreground">Duration:</span>
-                  <div className="flex items-center space-x-1">
-                    <input
-                      type="number"
-                      min="1"
-                      max="120"
-                      value={getCurrentModeDuration()}
-                      onChange={(e) => {
-                        const value = Math.max(
-                          1,
-                          parseInt(e.target.value) || 1,
-                        );
-                        if (mode === "work") setWorkMinutes(value);
-                        else if (mode === "shortBreak")
-                          setShortBreakMinutes(value);
-                        else setLongBreakMinutes(value);
-                      }}
-                      className="w-12 px-1 py-1 text-xs text-center rounded border border-border bg-background text-foreground"
-                    />
-                    <span className="text-xs text-muted-foreground">min</span>
+            {/* Desktop: Separate Stats and Mode */}
+            <div className="hidden lg:block">
+              {/* Stats */}
+              <div className="bg-card rounded-xl p-4 shadow-lg border border-border mb-4">
+                <h3 className="text-sm font-semibold text-foreground mb-3">
+                  Session Stats
+                </h3>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-foreground">
+                      {completedPomodoros}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Completed
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-foreground">
+                      {currentCycle}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Cycle</div>
+                  </div>
+                  <div className="text-center">
+                    <div className={`text-lg font-bold ${currentConfig.color}`}>
+                      {Math.round(progress)}%
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Progress
+                    </div>
                   </div>
                 </div>
-              )}
+              </div>
+
+              {/* Mode Switcher */}
+              <div className="bg-card rounded-xl p-4 shadow-lg border border-border mb-4">
+                <h3 className="text-sm font-semibold text-foreground mb-3">
+                  Mode
+                </h3>
+                <div className="grid grid-cols-3 gap-1 mb-3">
+                  {(
+                    Object.entries(modeConfig) as [
+                      keyof typeof modeConfig,
+                      (typeof modeConfig)[keyof typeof modeConfig],
+                    ][]
+                  ).map(([key, config]) => (
+                    <button
+                      key={key}
+                      onClick={() => switchMode(key)}
+                      className={`p-2 rounded-lg transition-all duration-200 font-medium text-xs ${
+                        mode === key
+                          ? `${config.bgColor} text-white shadow-lg`
+                          : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      }`}
+                    >
+                      {config.label}
+                    </button>
+                  ))}
+                </div>
+
+                {!isRunning && currentSeconds === 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-foreground">Duration:</span>
+                    <div className="flex items-center space-x-1">
+                      <input
+                        type="number"
+                        min="1"
+                        max="120"
+                        value={getCurrentModeDuration()}
+                        onChange={(e) => {
+                          const value = Math.max(
+                            1,
+                            parseInt(e.target.value) || 1,
+                          );
+                          if (mode === "work") setWorkMinutes(value);
+                          else if (mode === "shortBreak")
+                            setShortBreakMinutes(value);
+                          else setLongBreakMinutes(value);
+                        }}
+                        className="w-12 px-1 py-1 text-xs text-center rounded border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                        style={{ fontSize: "16px" }}
+                      />
+                      <span className="text-xs text-muted-foreground">min</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Ambient Sound Controls */}
-            <div className="bg-card rounded-xl p-4 shadow-lg border border-border flex-1">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-foreground">
+            <div className="bg-card rounded-xl p-3 lg:p-4 shadow-lg border border-border flex-1">
+              <div className="flex items-center justify-between mb-2 lg:mb-3">
+                <h3 className="text-xs lg:text-sm font-semibold text-foreground">
                   Ambient Sounds
                 </h3>
                 <button
@@ -824,7 +913,7 @@ export default function PomodoroTimer() {
               </div>
 
               {/* Sound Selection */}
-              <div className="grid grid-cols-5 gap-1 mb-3">
+              <div className="grid grid-cols-5 gap-1 mb-2 lg:mb-3">
                 {Object.entries(AMBIENT_SOUNDS).map(([key, sound]) => {
                   const SoundIcon = sound.icon;
                   return (
@@ -835,14 +924,14 @@ export default function PomodoroTimer() {
                           key as keyof typeof AMBIENT_SOUNDS,
                         )
                       }
-                      className={`flex flex-col items-center p-2 rounded-lg transition-all duration-200 ${
+                      className={`flex flex-col items-center p-1.5 lg:p-2 rounded-lg transition-all duration-200 ${
                         selectedAmbientSound === key
                           ? "bg-primary text-primary-foreground shadow-lg"
                           : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                       }`}
                     >
                       <SoundIcon
-                        size={14}
+                        size={12}
                         className={
                           selectedAmbientSound === key ? "" : sound.color
                         }
