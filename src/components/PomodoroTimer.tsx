@@ -596,7 +596,32 @@ export default function PomodoroTimer() {
 
   return (
     <div className="p-3 overflow-hidden">
-      <style dangerouslySetInnerHTML={{ __html: sliderThumbStyle }} />
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+        ${sliderThumbStyle}
+        
+        /* Prevent zoom on input focus */
+        @media screen and (max-width: 768px) {
+          input[type="number"] {
+            font-size: 16px !important;
+          }
+        }
+        
+        /* Ensure no zoom on mobile */
+        @viewport {
+          zoom: 1.0;
+          width: device-width;
+        }
+        
+        /* Additional mobile input styling */
+        input[type="number"]:focus {
+          font-size: 16px !important;
+          transform: none !important;
+        }
+      `,
+        }}
+      />
       <div className="max-w-7xl mx-auto flex flex-col h-full">
         {/* Main Content Grid */}
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-3 min-h-0">
@@ -800,9 +825,9 @@ export default function PomodoroTimer() {
             </div>
 
             {/* Desktop: Separate Stats and Mode */}
-            <div className="hidden lg:block">
+            <div className="hidden lg:block space-y-4">
               {/* Stats */}
-              <div className="bg-card rounded-xl p-4 shadow-lg border border-border mb-4">
+              <div className="bg-card rounded-xl p-4 shadow-lg border border-border">
                 <h3 className="text-sm font-semibold text-foreground mb-3">
                   Session Stats
                 </h3>
@@ -833,7 +858,7 @@ export default function PomodoroTimer() {
               </div>
 
               {/* Mode Switcher */}
-              <div className="bg-card rounded-xl p-4 shadow-lg border border-border mb-4">
+              <div className="bg-card rounded-xl p-4 shadow-lg border border-border">
                 <h3 className="text-sm font-semibold text-foreground mb-3">
                   Mode
                 </h3>
