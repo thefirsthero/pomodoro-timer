@@ -61,6 +61,9 @@ export default function PomodoroTimer() {
   const [totalSeconds, setTotalSeconds] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [completedMode, setCompletedMode] = useState<
+    "work" | "shortBreak" | "longBreak" | null
+  >(null);
   const [backgroundSoundEnabled, setBackgroundSoundEnabled] = useState(false);
   const [selectedAmbientSound, setSelectedAmbientSound] =
     useState<keyof typeof AMBIENT_SOUNDS>("rain");
@@ -394,6 +397,7 @@ export default function PomodoroTimer() {
           if (prev <= 1) {
             setIsRunning(false);
             setIsCompleted(true);
+            setCompletedMode(mode); // Store what mode was just completed
             playCompletionSound();
 
             // Auto-transition logic
@@ -455,6 +459,7 @@ export default function PomodoroTimer() {
     }
     setIsRunning(true);
     setIsCompleted(false);
+    setCompletedMode(null); // Clear completion message when starting
   };
 
   const pauseTimer = () => {
@@ -466,6 +471,7 @@ export default function PomodoroTimer() {
     setCurrentSeconds(0);
     setTotalSeconds(0);
     setIsCompleted(false);
+    setCompletedMode(null); // Clear completion message when resetting
   };
 
   const switchMode = (newMode: "work" | "shortBreak" | "longBreak") => {
@@ -474,6 +480,7 @@ export default function PomodoroTimer() {
     setCurrentSeconds(0);
     setTotalSeconds(0);
     setIsCompleted(false);
+    setCompletedMode(null); // Clear completion message when switching modes
   };
 
   const formatTime = (seconds: number) => {
@@ -489,6 +496,17 @@ export default function PomodoroTimer() {
     totalSeconds > 0
       ? ((totalSeconds - currentSeconds) / totalSeconds) * 100
       : 0;
+
+  // Get completion message based on what was just finished
+  const getCompletionMessage = () => {
+    if (!completedMode) return "";
+
+    if (completedMode === "work") {
+      return "Great work!";
+    } else {
+      return "Break over!";
+    }
+  };
 
   // Mode configurations
   const modeConfig = {
@@ -625,11 +643,11 @@ export default function PomodoroTimer() {
                         ? formatTime(currentSeconds)
                         : formatTime(getCurrentModeDuration() * 60)}
                     </div>
-                    {isCompleted && (
+                    {isCompleted && completedMode && (
                       <div
                         className={`text-xs font-medium mt-1 ${currentConfig.color}`}
                       >
-                        {mode === "work" ? "Great work!" : "Break over!"}
+                        {getCompletionMessage()}
                       </div>
                     )}
                     {isRunning && !isCompleted && (
